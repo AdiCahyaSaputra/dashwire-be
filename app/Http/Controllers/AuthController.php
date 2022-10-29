@@ -19,8 +19,11 @@ class AuthController extends Controller
   {
     return response()->json([
       'access_token' => $token,
-      'user' => auth()->user(),
-      'expires_in' => auth()->factory()->getTTL() * 60
+      'data' => [
+        'user' => auth()->user(),
+        'expires_in' => auth()->factory()->getTTL() * 60
+      ],
+      'message' => "You're Signed"
     ]);
   }
 
