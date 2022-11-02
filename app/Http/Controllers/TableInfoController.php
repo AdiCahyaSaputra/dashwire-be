@@ -20,62 +20,29 @@ class TableInfoController extends Controller
   {
     $tables = DB::table('table_infos')
       ->join('admins', 'admins.table_id', 'table_infos.id')
-      ->join('users', 'admins.user_id', 'users.id')
       ->select(
         'table_infos.name as table_name',
         'table_infos.id',
-        'users.name',
-        'admins.is_author'
-      )->get();
+      )->where('admins.user_id', Auth::id())->get();
 
     if (!count($tables)) return SendResponseHelper::error(status: 404, message: 'Data is Empty');
 
-    $data = [
-      [
-        'id' => $tables[0]->id,
-        'table' => $tables[0]->table_name,
-        'users' => [
-          [
-            'name' => $tables[0]->name,
-            'is_author' => $tables[0]->is_author
-          ]
-        ]
-      ]
-    ];
+    $data = [];
 
-    $pointerTables = 1;
-    $pointerData = 0;
-
-    while ($pointerTables < count($tables)) {
-
-      if ($data[$pointerData]['id'] === $tables[$pointerTables]->id) {
-
-        $data[$pointerData]['users'][] = [
-          'name' => $tables[$pointerTables]->name,
-          'is_author' => $tables[$pointerTables]->is_author
-        ];
-
-        $pointerTables++;
-      } else {
-        $data[] = [
-          'id' => $tables[$pointerTables]->id,
-          'table' => $tables[$pointerTables]->table_name,
-          'users' => [
-            [
-              'name' => $tables[$pointerTables]->name,
-              'is_author' => $tables[$pointerTables]->is_author
-            ]
-          ]
-        ];
-
-        $pointerData++;
-        $pointerTables++;
-      }
+    foreach ($tables as $table) {
+      $data[] = [
+        'id' => $table->id,
+        'table' => $table->table_name
+      ];
     }
 
-    return SendResponseHelper::success(status: 200, message: 'All Tables data with users info', data: [
-      'tables' => $data
-    ]);
+    return SendResponseHelper::success(
+      status: 200,
+      message: 'All Tables Based On Current User',
+      data: [
+        'tables' => $data
+      ]
+    );
   }
 
   public function withColumnAndValue(Request $request)

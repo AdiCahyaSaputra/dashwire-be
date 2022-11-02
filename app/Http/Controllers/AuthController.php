@@ -18,7 +18,10 @@ class AuthController extends Controller
   public function responseWithToken($token)
   {
     return response()->json([
-      'access_token' => $token,
+      'token' => [
+        'access_token' => $token['access_token'],
+        'refresh_token' => $token['refresh_token'],
+      ],
       'data' => [
         'user' => auth()->user(),
         'expires_in' => auth()->factory()->getTTL() * 60
@@ -59,11 +62,18 @@ class AuthController extends Controller
       'password' => 'required|min:8'
     ])->validate();
 
-    if (!$token = auth()->guard('api')->attempt($credentials)) {
+    if (!$access_token = auth()->guard('api')->attempt($credentials)) {
       return response()->json([
         'message' => 'Credentials or Request Is Not Valid'
       ], 401);
     }
+
+    $refresh = auth()->guard('api')->setTTL(60 * 24 * 30)->attempt($credentials);
+
+    $token = [
+      'access_token' => $access_token,
+      'refresh_token' => $refresh
+    ];
 
     return $this->responseWithToken($token);
   }

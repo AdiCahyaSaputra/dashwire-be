@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -31,6 +30,10 @@ class DatabaseSeeder extends Seeder
       'name' => "Putra Adi",
       'email' => 'saputra@gmail.com',
       'password' => bcrypt('hehe1234')
+    ]);
+
+    $this->call([
+      TableInfoSeeder::class
     ]);
   }
 }
