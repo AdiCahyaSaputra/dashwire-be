@@ -81,9 +81,7 @@ class TableInfoController extends Controller
       'column_values' => $column_values
     ];
 
-    return SendResponseHelper::success(200, 'Values Data from given table_id', [
-      'data' => $data
-    ]);
+    return SendResponseHelper::success(200, 'Values Data from given table_id', $data);
   }
 
   public function withAuthors(Request $request)
