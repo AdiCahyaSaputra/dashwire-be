@@ -38,5 +38,25 @@ class TableInfoSeeder extends Seeder
     ];
 
     DB::table('admins')->insert($admins);
+
+    $column_infos = [
+      [
+        'table_id' => $insertedTable->id,
+        'column_name' => 'nama',
+        'validation_rules' => 'required|string'
+      ],
+      [
+        'table_id' => $insertedTable->id,
+        'column_name' => 'nis',
+        'validation_rules' => 'required|string|max:8'
+      ],
+      [
+        'table_id' => $insertedTable->id,
+        'column_name' => 'jurusan',
+        'validation_rules' => 'required|string'
+      ],
+    ];
+
+    DB::table('column_infos')->insert($column_infos);
   }
 }

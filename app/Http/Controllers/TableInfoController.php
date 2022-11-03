@@ -45,7 +45,7 @@ class TableInfoController extends Controller
     );
   }
 
-  public function withColumnAndValue(Request $request)
+  public function withValues(Request $request)
   {
     Validator::make(
       $request->only('table_id'),
@@ -54,73 +54,57 @@ class TableInfoController extends Controller
       ]
     )->validate();
 
-    $tables = DB::table('table_infos')
+    $values = DB::table('table_infos')
       ->join('column_infos', 'column_infos.table_id', 'table_infos.id')
       ->join('value_infos', 'value_infos.column_id', 'column_infos.id')
       ->select(
-        'column_infos.table_id',
-        'table_infos.name',
-        'column_infos.id',
         'column_infos.column_name',
-        'column_infos.validation_rules',
-        'value_infos.values'
-      )
-      ->where('table_infos.id', $request->table_id)
-      ->get();
+        'value_infos.column_id',
+        'value_infos.values',
+        'table_infos.name',
+        'table_infos.id'
+      )->get();
 
-    if (!count($tables)) return SendResponseHelper::error(status: 404, message: 'Table not found or maybe there is no data in that table!');
+    if (!$values) return SendResponseHelper::error(404, 'There\'s No data in this table!');
 
-    $data = [
-      [
-        'id' => $tables[0]->table_id,
-        'table' => $tables[0]->name,
-        'columns_info' => [
-          [
-            'id' => $tables[0]->id,
-            'name' => $tables[0]->column_name,
-            'validation_rules' => $tables[0]->validation_rules,
-            'values' => $tables[0]->values
-          ]
-        ]
-      ]
-    ];
+    $column_values = [];
 
-    $pointerTables = 1;
-    $pointerData = 0;
-
-    while ($pointerTables < count($tables)) {
-
-      if ($data[$pointerData]['id'] === $tables[$pointerTables]->table_id) {
-
-        $data[$pointerData]['columns_info'][] = [
-          'id' => $tables[$pointerTables]->id,
-          'name' => $tables[$pointerTables]->column_name,
-          'validation_rules' => $tables[$pointerTables]->validation_rules,
-          'values' => $tables[$pointerTables]->values
-        ];
-
-        $pointerTables++;
-      } else {
-        $data[] = [
-          'id' => $tables[$pointerTables]->table_id,
-          'table' => $tables[$pointerTables]->name,
-          'columns_info' => [
-            [
-              'id' => $tables[$pointerTables]->id,
-              'name' => $tables[$pointerTables]->column_name,
-              'validation_rules' => $tables[$pointerTables]->validation_rules,
-              'values' => $tables[$pointerTables]->values
-            ]
-          ]
-        ];
-
-        $pointerData++;
-        $pointerTables++;
-      }
+    foreach ($values as $value) {
+      $column_values[$value->column_name][] = $value->values;
     }
 
-    return SendResponseHelper::success(200, 'Table with columns information', [
-      'table' => $data
+    $data = [
+      'table' => [
+        'id' => $values[0]->id,
+        'name' => $values[0]->name
+      ],
+      'column_values' => $column_values
+    ];
+
+    return SendResponseHelper::success(200, 'Values Data from given table_id', [
+      'data' => $data
+    ]);
+  }
+
+  public function withAuthors(Request $request)
+  {
+    Validator::make(
+      $request->only('table_id'),
+      [
+        'table_id' => 'required|uuid',
+      ]
+    )->validate();
+
+    $authors = DB::table('table_infos')
+      ->join('admins', 'admins.table_id', 'table_infos.id')
+      ->join('users', 'users.id', 'admins.user_id')
+      ->select('users.id', 'users.name', 'admins.is_author')
+      ->get();
+
+    if (!$authors) return SendResponseHelper::error(404, "There's No Author In That Table!");
+
+    return SendResponseHelper::success(200, 'Author Data from given table_id', [
+      'authors' => $authors
     ]);
   }
 
