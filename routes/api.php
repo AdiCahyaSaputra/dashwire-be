@@ -24,27 +24,29 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
   return $request->user();
 });
 
-Route::group(['prefix' => 'auth'], function () {
-  Route::post('/login', [AuthController::class, 'login']);
-  Route::post('/register', [AuthController::class, 'register']);
-  Route::post('/logout', [AuthController::class, 'logout']);
+Route::prefix('v1')->group(function () {
+  Route::group(['prefix' => 'auth'], function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:api');
 
-  Route::get('/refresh', [AuthController::class, 'refresh']);
-});
-
-Route::group(['middleware' => 'auth:api', 'prefix' => 'table'], function () {
-  Route::controller(TableInfoController::class)->group(function () {
-    Route::get('/', 'index');
-    Route::post('/values', 'withValues');
-    Route::post('/authors', 'withAuthors');
-
-    Route::post('/', 'store');
+    Route::get('/refresh', [AuthController::class, 'refresh'])->middleware();
   });
-});
 
-Route::group(['middleware' => 'auth:api', 'prefix' => 'value'], function () {
-  Route::controller(ValueInfoController::class)->group(function () {
-    Route::post('/', 'store');
+  Route::group(['middleware' => 'auth:api', 'prefix' => 'table'], function () {
+    Route::controller(TableInfoController::class)->group(function () {
+      Route::get('/', 'index');
+      Route::post('/values', 'withValues');
+      Route::post('/authors', 'withAuthors');
+
+      Route::post('/', 'store');
+    });
+  });
+
+  Route::group(['middleware' => 'auth:api', 'prefix' => 'value'], function () {
+    Route::controller(ValueInfoController::class)->group(function () {
+      Route::post('/', 'store');
+    });
   });
 });
 

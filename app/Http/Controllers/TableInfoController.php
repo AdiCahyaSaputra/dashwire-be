@@ -65,7 +65,7 @@ class TableInfoController extends Controller
         'table_infos.id'
       )->get();
 
-    if (!$values) return SendResponseHelper::error(404, 'There\'s No data in this table!');
+    if (!count($values)) return SendResponseHelper::error(404, 'There\'s No data in this table!');
 
     $column_values = [];
 
@@ -99,7 +99,7 @@ class TableInfoController extends Controller
       ->select('users.id', 'users.name', 'admins.is_author')
       ->get();
 
-    if (!$authors) return SendResponseHelper::error(404, "There's No Author In That Table!");
+    if (!count($authors)) return SendResponseHelper::error(404, "There's No Author In That Table!");
 
     return SendResponseHelper::success(200, 'Author Data from given table_id', [
       'authors' => $authors
